@@ -103,3 +103,57 @@ export async function activateUser(userId, verificationId) {
     return true;
   });
 }
+
+
+export async function createRefreshToken({
+  userId,
+  tokenHash,
+  expiresAt,
+}) {
+  return prisma.refreshToken.create({
+    data: {
+      userId,
+      tokenHash,
+      expiresAt,
+    },
+  });
+}
+
+export async function findRefreshTokenWithUser(tokenHash) {
+  return prisma.refreshToken.findUnique({
+    where: { tokenHash },
+    include: {
+      user: true,
+    },
+  });
+}
+
+export async function revokeRefreshToken(tokenHash) {
+  return prisma.refreshToken.updateMany({
+    where: {
+      tokenHash,
+      revokedAt: null,
+    },
+    data: {
+      revokedAt: new Date(),
+    },
+  });
+}
+
+
+export async function findUserById(userId) {
+  return prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      profileType: true,
+      role: true,
+      emailVerified: true,
+      createdAt: true,
+    },
+  });
+}
+
