@@ -139,3 +139,21 @@ export async function revokeRefreshToken(tokenHash) {
     },
   });
 }
+
+
+export async function findUserById(userId) {
+  return prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      profileType: true,
+      role: true,
+      emailVerified: true,
+      createdAt: true,
+    },
+  });
+}
+

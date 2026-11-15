@@ -30,6 +30,7 @@ model User {
   updatedAt     DateTime    @default(now()) @map("updated_at") @db.Timestamptz
   verificationCode EmailVerificationCode?
   refreshTokens RefreshToken[]
+  role UserRole @default(USER)
 
   @@map("users")
 }
@@ -58,4 +59,13 @@ model RefreshToken {
 
   
   @@map("refresh_tokens")
+}
+
+enum UserRole {
+  USER
+  GERANT
+  AGENT_PAIEMENT
+  AGENT_SUIVI
+
+  @@map("user_role")
 }
