@@ -4,8 +4,8 @@ import {
   updateRoom as saveRoomChanges,
 } from "@/features/rooms/repositories/room.repository";
 
-const allowedRoomTypes = new Set(["INDIVIDUAL", "MEETING", "TRAINING"]);
-const editableFields = ["name", "capacity", "roomType"];
+const allowedRoomTypes = new Set(["INDIVIDUAL", "MEETING", "TRAINING", "OTHER"]);
+const editableFields = ["name", "capacity", "roomType", "customRoomType"];
 
 function validationError(message) {
   const error = new Error(message);
@@ -35,8 +35,12 @@ function validateRoomData(data, { partial = false } = {}) {
 
   if (!partial || Object.hasOwn(data, "roomType")) {
     if (!allowedRoomTypes.has(data.roomType)) {
-      throw validationError("Room type must be INDIVIDUAL, MEETING, or TRAINING.");
+      throw validationError("Room type must be INDIVIDUAL, MEETING, TRAINING, or OTHER.");
     }
+  }
+
+  if (data.roomType === "OTHER" && (typeof data.customRoomType !== "string" || !data.customRoomType.trim() || data.customRoomType.trim().length > 100)) {
+    throw validationError("Enter a custom room type of at most 100 characters.");
   }
 
   const result = {};
@@ -44,6 +48,9 @@ function validateRoomData(data, { partial = false } = {}) {
     if (Object.hasOwn(data, field)) {
       result[field] = field === "name" ? data[field].trim() : data[field];
     }
+  }
+  if (Object.hasOwn(data, "roomType") && data.roomType !== "OTHER") {
+    result.customRoomType = null;
   }
 
   if (partial && Object.keys(result).length === 0) {

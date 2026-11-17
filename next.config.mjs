@@ -6,7 +6,7 @@ const nextConfig = {
   },
   turbopack: {
     rules: {
-      "*.css": {
+      "src/app/globals.css": {
         loaders: ["@tailwindcss/turbopack"],
         as: "*.css",
       },
