@@ -31,6 +31,7 @@ model User {
   verificationCode EmailVerificationCode?
   refreshTokens RefreshToken[]
   role UserRole @default(USER)
+  reservations Reservation[]
 
   @@map("users")
 }
@@ -90,6 +91,7 @@ model Room {
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   equipment RoomEquipment[]
+  reservations Reservation[]
 
   @@map("rooms")
 }
@@ -114,4 +116,39 @@ model RoomEquipment {
   @@id([roomId, equipmentId])
   @@index([equipmentId])
   @@map("room_equipment")
+}
+enum ReservationPurpose {
+  PERSONAL_REVISION
+  PERSONAL_TASK
+  MEETING
+  GROUP_TRAINING
+
+  @@map("reservation_purpose")
+}
+
+enum ReservationStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  CANCELLED
+
+  @@map("reservation_status")
+}
+
+model Reservation {
+  id           String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String             @map("user_id") @db.Uuid
+  roomId       String             @map("room_id") @db.Uuid
+  purpose      ReservationPurpose
+  status       ReservationStatus  @default(PENDING_PAYMENT)
+  startAt      DateTime           @map("start_at") @db.Timestamptz(6)
+  endAt        DateTime           @map("end_at") @db.Timestamptz(6)
+  participants Int
+  createdAt    DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id])
+  room Room @relation(fields: [roomId], references: [id])
+
+  @@index([roomId, startAt, endAt])
+  @@index([userId])
+  @@map("reservations")
 }

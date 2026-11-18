@@ -23,5 +23,5 @@ export default async function RoomsPage() {
   if (!user || !user.emailVerified) redirect("/");
   if (user.role !== "GERANT") redirect("/");
 
-  return <RoomsDashboard />;
+  return <RoomsDashboard user={{ firstName: user.firstName, lastName: user.lastName, role: user.role }} />;
 }

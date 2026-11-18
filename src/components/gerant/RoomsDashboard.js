@@ -51,7 +51,7 @@ function EquipmentIcon({ name, size = 14 }) {
     : <Monitor size={size} />;
 }
 
-export default function RoomsDashboard() {
+export default function RoomsDashboard({ user }) {
   const router = useRouter();
   const [rooms, setRooms] = useState([]);
   const [equipment, setEquipment] = useState([]);
@@ -353,8 +353,13 @@ export default function RoomsDashboard() {
         </nav>
         <div className={styles.sidebarBottom}>
           <div className={styles.profileCard}>
-            <span className={styles.avatar}>G</span>
-            <span className={styles.profileText}><strong>Gérant</strong><small>Administration</small></span>
+            <span className={styles.avatar} aria-hidden="true">
+              {[user?.firstName, user?.lastName].filter(Boolean).map((part) => part[0]).join("").toLocaleUpperCase("fr") || "C"}
+            </span>
+            <span className={styles.profileText}>
+              <strong>{user?.role === "GERANT" ? "Gérant" : "Compte personnel"}</strong>
+              <small>{[user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Utilisateur"}</small>
+            </span>
           </div>
           <button type="button" onClick={logout} className={styles.logoutLink} aria-label="Déconnexion">
             <LogOut size={16} /> Déconnexion
