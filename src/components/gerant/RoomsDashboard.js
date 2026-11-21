@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   Armchair,
   ArrowDownUp,
@@ -10,7 +9,6 @@ import {
   ChevronDown,
   DoorOpen,
   LoaderCircle,
-  LogOut,
   Monitor,
   Pencil,
   Plus,
@@ -25,6 +23,7 @@ import {
   X,
 } from "lucide-react";
 import styles from "./RoomsDashboard.module.css";
+import LogoutButton from "@/components/auth/LogoutButton";
 
 const roomTypeLabels = {
   INDIVIDUAL: "Bureau individuel",
@@ -52,7 +51,6 @@ function EquipmentIcon({ name, size = 14 }) {
 }
 
 export default function RoomsDashboard({ user }) {
-  const router = useRouter();
   const [rooms, setRooms] = useState([]);
   const [equipment, setEquipment] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -204,18 +202,6 @@ export default function RoomsDashboard({ user }) {
     setEquipmentFormOpen(true);
   }
 
-  async function logout() {
-    try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "same-origin",
-      });
-    } finally {
-      router.replace("/");
-      router.refresh();
-    }
-  }
-
   async function submitRoom(event) {
     event.preventDefault();
     setSaving(true);
@@ -361,9 +347,7 @@ export default function RoomsDashboard({ user }) {
               <small>{[user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Utilisateur"}</small>
             </span>
           </div>
-          <button type="button" onClick={logout} className={styles.logoutLink} aria-label="Déconnexion">
-            <LogOut size={16} /> Déconnexion
-          </button>
+          <LogoutButton className={styles.logoutLink} />
         </div>
       </aside>
 

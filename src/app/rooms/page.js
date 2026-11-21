@@ -1,4 +1,5 @@
 import AvailabilitySearch from "@/components/rooms/AvailabilitySearch";
+import SessionGuard from "@/components/auth/SessionGuard";
 import { cookies } from "next/headers";
 import { findUserById } from "@/features/auth/repositories/auth.repository";
 import { verifyAccessToken } from "@/features/auth/utils/jwt";
@@ -25,5 +26,10 @@ export default async function RoomsPage() {
     }
   }
 
-  return <AvailabilitySearch user={user} />;
+  return (
+    <>
+      <AvailabilitySearch user={user} />
+      {user ? <SessionGuard /> : null}
+    </>
+  );
 }
