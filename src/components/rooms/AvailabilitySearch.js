@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Armchair, CalendarDays, Clock3, DoorOpen, LogOut, Monitor, Search, Users } from "lucide-react";
+import { Armchair, CalendarDays, Clock3, DoorOpen, LogIn, Monitor, Search, Users } from "lucide-react";
+import LogoutButton from "@/components/auth/LogoutButton";
 import styles from "./AvailabilitySearch.module.css";
 
 const PURPOSES = [
@@ -41,7 +41,6 @@ function getDisplayError(message) {
 }
 
 export default function AvailabilitySearch({ user }) {
-  const router = useRouter();
   const [form, setForm] = useState({
     date: "",
     startTime: "",
@@ -53,15 +52,6 @@ export default function AvailabilitySearch({ user }) {
   const [rooms, setRooms] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  async function logout() {
-    try {
-      await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
-    } finally {
-      router.replace("/");
-      router.refresh();
-    }
-  }
 
   function update(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -137,11 +127,9 @@ export default function AvailabilitySearch({ user }) {
             </span>
           </div>
           {user ? (
-            <button type="button" onClick={logout} className={styles.logoutLink} aria-label="Déconnexion">
-              <LogOut size={16} /> Déconnexion
-            </button>
+            <LogoutButton className={styles.logoutLink} />
           ) : (
-            <Link href="/" className={styles.logoutLink}><LogOut size={16} /> Se connecter</Link>
+            <Link href="/login?next=/rooms" className={styles.logoutLink}><LogIn size={16} /> Se connecter</Link>
           )}
         </div>
       </aside>
