@@ -1,27 +1,14 @@
 import RoomsDashboard from "@/components/gerant/RoomsDashboard";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { findUserById } from "@/features/auth/repositories/auth.repository";
-import { verifyAccessToken } from "@/features/auth/utils/jwt";
+import { requireRole } from "@/features/auth/utils/session";
+import { ROLES } from "@/features/auth/roles";
 
 export const metadata = {
   title: "Gestion des salles | Calma Workspace",
 };
 
 export default async function RoomsPage() {
-  const accessToken = (await cookies()).get("accessToken")?.value;
-  if (!accessToken) redirect("/");
-
-  let payload;
-  try {
-    payload = await verifyAccessToken(accessToken);
-  } catch {
-    redirect("/");
-  }
-
-  const user = payload?.sub ? await findUserById(payload.sub) : null;
-  if (!user || !user.emailVerified) redirect("/");
-  if (user.role !== "GERANT") redirect("/");
+  // Anonyme → /login ; autre rôle → /acces-refuse (voir src/features/auth/utils/session.js).
+  const user = await requireRole([ROLES.GERANT], { from: "/gerant/salles" });
 
   return <RoomsDashboard user={{ firstName: user.firstName, lastName: user.lastName, role: user.role }} />;
 }
