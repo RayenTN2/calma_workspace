@@ -107,3 +107,125 @@ export async function refreshSession() {
     return "error";
   }
 }
+
+export const REGISTER_MESSAGES = Object.freeze({
+  missingFirstName: "Veuillez saisir votre prénom.",
+  missingLastName: "Veuillez saisir votre nom.",
+  missingEmail: "Veuillez saisir votre adresse email.",
+  invalidEmail: "Adresse email invalide.",
+  missingPhone: "Veuillez saisir votre numéro de téléphone.",
+  invalidPhone: "Numéro de téléphone invalide.",
+  missingProfile: "Veuillez sélectionner un profil.",
+  invalidProfile: "Profil sélectionné invalide.",
+  missingPassword: "Veuillez saisir un mot de passe.",
+  weakPassword: "Le mot de passe doit contenir au moins 8 caractères.",
+  passwordTooLong: "Le mot de passe ne doit pas dépasser 72 caractères.",
+  duplicateEmail: "Cette adresse email est déjà enregistrée.",
+  network: "Impossible de contacter le serveur. Vérifiez votre connexion et réessayez.",
+  server: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
+});
+
+export const PROFILE_OPTIONS = Object.freeze([
+  { value: "STUDENT", label: "Étudiant" },
+  { value: "PUPIL", label: "Élève" },
+  { value: "DEVELOPER", label: "Développeur" },
+  { value: "ENTREPRENEUR", label: "Entrepreneur" },
+  { value: "PERSONNEL", label: "Personnel" },
+]);
+
+/**
+ * Validation côté client du formulaire d'inscription.
+ * Renvoie un objet de messages d'erreur par champ ({ [champ]: string }) ou null.
+ */
+export function validateRegisterInput(data) {
+  const { firstName, lastName, email, phone, profileType, password } = data ?? {};
+  const errors = {};
+
+  if (!firstName?.trim()) {
+    errors.firstName = REGISTER_MESSAGES.missingFirstName;
+  }
+
+  if (!lastName?.trim()) {
+    errors.lastName = REGISTER_MESSAGES.missingLastName;
+  }
+
+  if (!email?.trim()) {
+    errors.email = REGISTER_MESSAGES.missingEmail;
+  } else if (!EMAIL_PATTERN.test(email.trim())) {
+    errors.email = REGISTER_MESSAGES.invalidEmail;
+  }
+
+  if (!phone?.trim()) {
+    errors.phone = REGISTER_MESSAGES.missingPhone;
+  } else {
+    const cleaned = phone.replace(/[\s.-]/g, "");
+    if (!/^\+?\d{8,15}$/.test(cleaned)) {
+      errors.phone = REGISTER_MESSAGES.invalidPhone;
+    }
+  }
+
+  if (!profileType?.trim()) {
+    errors.profileType = REGISTER_MESSAGES.missingProfile;
+  } else if (!PROFILE_OPTIONS.some((opt) => opt.value === profileType)) {
+    errors.profileType = REGISTER_MESSAGES.invalidProfile;
+  }
+
+  if (!password) {
+    errors.password = REGISTER_MESSAGES.missingPassword;
+  } else if (password.length < 8) {
+    errors.password = REGISTER_MESSAGES.weakPassword;
+  } else if (password.length > 72) {
+    errors.password = REGISTER_MESSAGES.passwordTooLong;
+  }
+
+  return Object.keys(errors).length > 0 ? errors : null;
+}
+
+/**
+ * Envoie la requête d'inscription au backend.
+ * @returns {Promise<{ ok: true, data: object } | { ok: false, message: string, fieldErrors?: Record<string, string> }>}
+ */
+export async function registerAccount(formData) {
+  let response;
+  try {
+    response = await fetch("/api/auth/register", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        firstName: formData.firstName?.trim(),
+        lastName: formData.lastName?.trim(),
+        email: formData.email?.trim(),
+        password: formData.password,
+        profileType: formData.profileType,
+        phone: formData.phone?.trim(),
+      }),
+    });
+  } catch {
+    return { ok: false, message: REGISTER_MESSAGES.network };
+  }
+
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    // Non-JSON response fallback
+  }
+
+  if (!response.ok) {
+    if (response.status === 409) {
+      return {
+        ok: false,
+        message: REGISTER_MESSAGES.duplicateEmail,
+        fieldErrors: { email: REGISTER_MESSAGES.duplicateEmail },
+      };
+    }
+    return {
+      ok: false,
+      message: payload?.message || REGISTER_MESSAGES.server,
+    };
+  }
+
+  return { ok: true, data: payload };
+}
+

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import LoginForm from "@/components/auth/LoginForm";
@@ -42,6 +43,12 @@ export default async function LoginPage({ searchParams }) {
             Accédez à vos réservations et à votre espace.
           </p>
           <LoginForm next={next} reason={reason} />
+          <p className="mt-5 text-center text-sm text-[#6b7a72]">
+            Pas encore de compte ?{" "}
+            <Link href="/register" className="font-semibold text-[#2f6b53] hover:underline">
+              S&apos;inscrire
+            </Link>
+          </p>
         </section>
       </div>
     </main>
