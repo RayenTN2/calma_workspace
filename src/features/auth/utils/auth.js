@@ -2,8 +2,18 @@
 import { verifyAccessToken } from "./jwt";
 
 export async function getAuthenticatedUser(request) {
-  // 1. Read access token from HttpOnly cookie
-  const accessToken = request.cookies.get("accessToken")?.value;
+  // 1. Read access token from HttpOnly cookie or Authorization header
+  let accessToken = request?.cookies?.get?.("accessToken")?.value;
+
+  if (!accessToken && request?.headers) {
+    const authHeader = typeof request.headers.get === "function"
+      ? request.headers.get("authorization")
+      : request.headers["authorization"] || request.headers["Authorization"];
+
+    if (authHeader && typeof authHeader === "string" && authHeader.startsWith("Bearer ")) {
+      accessToken = authHeader.slice(7).trim();
+    }
+  }
 
   // 2. No token means unauthenticated
   if (!accessToken) {
