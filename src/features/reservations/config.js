@@ -1,0 +1,28 @@
+import {
+  CENTER_UTC_OFFSET,
+  BOOKING_BUFFER_MINUTES,
+  BLOCKING_STATUSES,
+  PURPOSE_TO_ROOM_TYPE,
+} from "@/features/availability/config";
+
+export {
+  CENTER_UTC_OFFSET,
+  BOOKING_BUFFER_MINUTES,
+  BLOCKING_STATUSES,
+  PURPOSE_TO_ROOM_TYPE,
+};
+
+export const VALID_PURPOSES = Object.freeze(Object.keys(PURPOSE_TO_ROOM_TYPE));
+
+export const RESERVATION_STATUSES = Object.freeze({
+  PENDING_PAYMENT: "PENDING_PAYMENT",
+  CONFIRMED: "CONFIRMED",
+  CANCELLED: "CANCELLED",
+});
+
+export const ALL_RESERVATION_ROLES = Object.freeze([
+  "USER",
+  "GERANT",
+  "AGENT_SUIVI",
+  "AGENT_PAIEMENT",
+]);

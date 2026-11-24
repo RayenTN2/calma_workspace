@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Armchair, CalendarDays, Clock3, DoorOpen, LogIn, Monitor, Search, Users } from "lucide-react";
+import { Armchair, CalendarDays, CheckCircle2, Clock3, DoorOpen, LogIn, Monitor, Search, Users } from "lucide-react";
 import LogoutButton from "@/components/auth/LogoutButton";
 import styles from "./AvailabilitySearch.module.css";
 
@@ -32,12 +32,13 @@ const ERROR_MESSAGES = {
   "End time must be after start time.": "L’heure de fin doit être postérieure à l’heure de début.",
   "Participants must be a positive whole number.": "Le nombre de participants doit être un entier supérieur à zéro.",
   "Invalid reservation purpose.": "L’usage sélectionné n’est pas reconnu.",
-  "You must log in first.": "Connectez-vous pour rechercher les disponibilités.",
-  "Internal server error.": "Une erreur est survenue lors de la recherche.",
+  "This room is already booked for the selected time slot.": "Cette salle est déjà réservée pour ce créneau horaire.",
+  "You must log in first.": "Connectez-vous pour effectuer cette action.",
+  "Internal server error.": "Une erreur est survenue lors de l'opération.",
 };
 
 function getDisplayError(message) {
-  return ERROR_MESSAGES[message] || "La recherche n’a pas pu aboutir. Réessayez dans un instant.";
+  return ERROR_MESSAGES[message] || message || "L’opération n’a pas pu aboutir. Réessayez dans un instant.";
 }
 
 export default function AvailabilitySearch({ user }) {
@@ -51,7 +52,9 @@ export default function AvailabilitySearch({ user }) {
   });
   const [rooms, setRooms] = useState(null);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [bookingRoomId, setBookingRoomId] = useState(null);
 
   function update(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -69,6 +72,7 @@ export default function AvailabilitySearch({ user }) {
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
+    setSuccess("");
     setRooms(null);
     setLoading(true);
 
@@ -102,6 +106,55 @@ export default function AvailabilitySearch({ user }) {
     }
   }
 
+  async function handleBookRoom(room) {
+    setError("");
+    setSuccess("");
+    setBookingRoomId(room.id);
+
+    const bookingPurpose =
+      form.purpose ||
+      (room.roomType === "MEETING"
+        ? "MEETING"
+        : room.roomType === "TRAINING"
+        ? "GROUP_TRAINING"
+        : "PERSONAL_REVISION");
+
+    try {
+      const response = await fetch("/api/reservations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          roomId: room.id,
+          purpose: bookingPurpose,
+          date: form.date,
+          startTime: form.startTime,
+          endTime: form.endTime,
+          participants: form.participants,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(getDisplayError(data.message));
+        return;
+      }
+
+      const purposeLabel =
+        PURPOSES.find((p) => p.value === bookingPurpose)?.label || bookingPurpose;
+      setSuccess(
+        `Salle « ${room.name} » réservée avec succès pour le ${form.date} de ${form.startTime} à ${form.endTime} (${purposeLabel}) ! Le créneau est bloqué.`
+      );
+      setRooms((current) => current.filter((r) => r.id !== room.id));
+    } catch {
+      setError("Impossible de joindre le serveur pour réserver la salle.");
+    } finally {
+      setBookingRoomId(null);
+    }
+  }
+
   return (
     <main className={styles.shell}>
       <aside className={styles.sidebar}>
@@ -114,6 +167,10 @@ export default function AvailabilitySearch({ user }) {
           <Link className={`${styles.navLink} ${styles.navActive}`} href="/rooms" aria-current="page">
             <DoorOpen size={18} strokeWidth={1.8} />
             <span>Rechercher une salle</span>
+          </Link>
+          <Link className={styles.navLink} href="/reservations">
+            <CalendarDays size={18} strokeWidth={1.8} />
+            <span>Mes réservations</span>
           </Link>
         </nav>
         <div className={styles.sidebarBottom}>
@@ -257,6 +314,12 @@ export default function AvailabilitySearch({ user }) {
         </section>
 
         {error && <p role="alert" className={styles.errorMessage}>{error}</p>}
+        {success && (
+          <p role="status" className={styles.bookingSuccess}>
+            <CheckCircle2 size={18} style={{ display: "inline", verticalAlign: "text-bottom", marginRight: 8 }} />
+            {success}
+          </p>
+        )}
 
         {rooms && (
           <section className={styles.resultsCard} aria-live="polite" aria-labelledby="results-title">
@@ -293,6 +356,14 @@ export default function AvailabilitySearch({ user }) {
                     <span className={styles.capacityBadge}>
                       <Users size={15} /> Jusqu’à {room.capacity} places
                     </span>
+                    <button
+                      type="button"
+                      onClick={() => handleBookRoom(room)}
+                      disabled={bookingRoomId === room.id}
+                      className={styles.bookButton}
+                    >
+                      {bookingRoomId === room.id ? "Réservation…" : "Réserver"}
+                    </button>
                   </li>
                 ))}
               </ul>
