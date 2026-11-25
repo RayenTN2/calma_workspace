@@ -103,28 +103,27 @@ export default function RegisterForm() {
         </div>
 
         <h2 className="mb-2 text-2xl font-bold tracking-tight text-[#1f3128]">
-          Inscription confirmée !
+          Vérifiez votre adresse e-mail
         </h2>
 
         <p className="mb-5 text-sm text-[#6b7a72]">
-          Votre compte pour le profil{" "}
-          <strong className="font-semibold text-[#1f3128]">{profileLabel}</strong> a bien été créé.
+          Votre demande de création de compte pour le profil{" "}
+          <strong className="font-semibold text-[#1f3128]">{profileLabel}</strong> a bien été enregistrée.
         </p>
 
         <div className="mb-6 w-full rounded-xl border border-[#dde4de] bg-[#edf4ef] p-4 text-left text-sm text-[#245641]">
-          <p className="mb-1 font-semibold">Confirmation de votre compte</p>
+          <p className="mb-1 font-semibold">Un code vous a été envoyé</p>
           <p className="text-xs leading-relaxed text-[#245641]/85">
-            Un e-mail de confirmation avec votre code d&apos;activation a été envoyé à{" "}
+            Saisissez le code reçu à l&apos;adresse{" "}
             <strong className="font-semibold">{registeredData.email}</strong>.
-            (La confirmation par e-mail relève de l&apos;US-14, optionnelle).
           </p>
         </div>
 
         <Link
-          href="/login"
+          href={`/verify-email?email=${encodeURIComponent(registeredData.email)}`}
           className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#2f6b53] px-4 text-[15px] font-semibold text-white transition hover:bg-[#245641] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2f6b53]"
         >
-          <span>Aller à la page de connexion</span>
+          <span>Vérifier mon adresse e-mail</span>
           <ArrowRight size={18} aria-hidden="true" />
         </Link>
       </div>
