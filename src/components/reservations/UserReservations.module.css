@@ -1,76 +1,104 @@
 .shell {
-  display: flex;
+  --ink: #1f3128;
+  --ink-soft: #4a5b52;
+  --muted: #6b7a72;
+  --line: #e4e9e5;
+  --canvas: #f4f7f4;
+  --surface: #ffffff;
+  --green: #2f6b53;
+  --green-dark: #245641;
+  --green-soft: #edf4ef;
+  --danger: #a2473e;
+  --danger-soft: #fff0ee;
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(31, 49, 40, 0.05), 0 6px 20px rgba(31, 49, 40, 0.06);
+
   min-height: 100vh;
-  background: var(--bg);
+  display: flex;
+  background: var(--canvas);
   color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.shell button,
+.shell input,
+.shell select {
+  font: inherit;
+}
+
+.shell :focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
 }
 
 .sidebar {
-  position: sticky;
-  top: 0;
+  box-sizing: border-box;
+  width: 260px;
+  flex: none;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  padding: 26px 18px 18px;
   display: flex;
   flex-direction: column;
-  width: 260px;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
   height: 100vh;
-  padding: 24px 20px;
-  border-right: 1px solid var(--line);
-  background: var(--surface);
-  flex-shrink: 0;
 }
 
 .brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  color: var(--ink);
+  gap: 11px;
+  color: #294537;
   font-size: 19px;
-  font-weight: 770;
-  letter-spacing: -0.4px;
+  font-weight: 750;
+  letter-spacing: -0.6px;
   text-decoration: none;
 }
 
 .brandMark {
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
+  border-radius: 11px 11px 11px 3px;
   background: var(--green);
   color: #fff;
-  font-size: 17px;
-  font-weight: 800;
+  font-family: Georgia, serif;
+  font-size: 24px;
 }
 
 .brandLight {
-  color: var(--muted);
+  color: #6f7f76;
   font-weight: 400;
 }
 
 .workspaceLabel {
-  margin-top: 26px;
-  margin-bottom: 12px;
-  color: #8c9e92;
+  margin: 40px 10px 12px;
+  color: #8a968f;
   font-size: 11px;
-  font-weight: 750;
-  letter-spacing: 0.9px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
 }
 
 .nav {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: grid;
+  gap: 4px;
 }
 
 .navLink {
+  min-height: 44px;
+  padding: 0 12px;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 14px;
-  border-radius: 9px;
   color: var(--ink-soft);
-  font-size: 14px;
-  font-weight: 600;
   text-decoration: none;
+  border-radius: 9px;
+  font-size: 14px;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
@@ -81,22 +109,22 @@
 
 .navActive {
   background: var(--green-soft);
-  color: var(--green-dark);
+  color: var(--green);
+  font-weight: 650;
 }
 
 .sidebarBottom {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
   margin-top: auto;
-  padding-top: 18px;
-  border-top: 1px solid var(--line);
+  margin-bottom: 12px;
 }
 
 .profileCard {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 11px;
+  padding: 14px 8px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
 }
 
 .avatar {
@@ -104,193 +132,286 @@
   place-items: center;
   width: 38px;
   height: 38px;
-  border-radius: 10px;
-  background: #eef3ef;
-  color: var(--green-dark);
-  font-size: 13px;
+  flex: none;
+  border-radius: 50%;
+  background: #e2eee6;
+  color: var(--green);
   font-weight: 700;
 }
 
 .profileText {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  gap: 2px;
+  flex: 1;
   min-width: 0;
 }
 
 .profileText strong {
-  font-size: 13px;
   color: var(--ink);
+  font-size: 14px;
 }
 
 .profileText small {
-  font-size: 12px;
   color: var(--muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 12px;
+  overflow-wrap: anywhere;
 }
 
 .logoutLink {
+  width: 100%;
   display: flex;
+  gap: 10px;
   align-items: center;
-  gap: 8px;
-  color: var(--muted);
+  padding: 11px 10px;
+  margin-top: 4px;
+  color: var(--ink-soft);
   font-size: 13px;
   text-decoration: none;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.logoutLink:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 .mainArea {
-  flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
+  flex: 1;
 }
 
 .topbar {
+  height: 64px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  padding: 0 clamp(20px, 4vw, 56px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;
-  padding: 0 32px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .breadcrumb {
-  font-size: 13px;
   color: var(--muted);
+  font-size: 13px;
+}
+
+.breadcrumb span {
+  padding: 0 8px;
+  color: #c0c8c3;
 }
 
 .breadcrumb strong {
   color: var(--ink);
+  font-weight: 650;
+}
+
+.topbarRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.onlineDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4fa56e;
+  box-shadow: 0 0 0 3px #e3f2e8;
 }
 
 .content {
-  padding: 32px;
-  max-width: 1000px;
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  padding: 36px clamp(20px, 4vw, 56px) 64px;
 }
 
 .pageHeading {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 24px;
   margin-bottom: 28px;
 }
 
-.eyebrow {
-  margin: 0 0 6px;
+.eyebrow,
+.sectionEyebrow {
+  margin: 0 0 8px;
   color: #73877b;
   font-size: 11px;
   font-weight: 750;
-  letter-spacing: 1.2px;
+  letter-spacing: 1.25px;
 }
 
 .pageHeading h1 {
   margin: 0;
-  font-size: 32px;
-  font-weight: 750;
   color: #1c3327;
-  letter-spacing: -1px;
+  font-size: clamp(30px, 4vw, 42px);
+  font-weight: 760;
+  letter-spacing: -1.35px;
+  line-height: 1.12;
 }
 
 .pageLead {
-  margin: 8px 0 0;
+  margin: 10px 0 0;
   color: var(--muted);
-  font-size: 15px;
+  font-size: 16px;
+}
+
+.headingIcon,
+.cardIcon,
+.itemIcon,
+.emptyIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  color: var(--green);
+  background: var(--green-soft);
 }
 
 .headingIcon {
-  display: grid;
-  place-items: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  background: var(--green-soft);
-  color: var(--green);
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
 }
 
 .card {
+  overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 18px;
   background: var(--surface);
   box-shadow: var(--shadow);
-  overflow: hidden;
 }
 
-.cardHeader {
+.cardHeading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--line);
+  gap: 18px;
+  padding: 24px 28px 20px;
 }
 
-.cardHeader h2 {
+.cardHeading h2 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 700;
   color: var(--ink);
+  font-size: 20px;
+  font-weight: 730;
+  letter-spacing: -0.35px;
+}
+
+.cardHeading p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.sectionEyebrow {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 10px;
+}
+
+.cardIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
 }
 
 .countBadge {
-  padding: 5px 12px;
+  padding: 7px 14px;
   border-radius: 20px;
-  background: #edf3ef;
-  color: var(--green-dark);
+  background: #eef3ef;
+  color: var(--ink-soft);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 650;
+}
+
+.alertSuccess {
+  margin: 0 0 24px;
+  padding: 13px 18px;
+  border: 1px solid #b8dfca;
+  border-radius: 10px;
+  background: #eef8f2;
+  color: var(--green-dark);
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.alertError {
+  margin: 0 0 24px;
+  padding: 13px 18px;
+  border: 1px solid #f0cfca;
+  border-radius: 10px;
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .emptyState {
+  min-height: 200px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px 24px;
+  padding: 40px 24px;
+  border-top: 1px solid #edf0ed;
   text-align: center;
 }
 
 .emptyIcon {
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: var(--green-soft);
-  color: var(--green);
+  width: 52px;
+  height: 52px;
   margin-bottom: 14px;
+  border-radius: 15px;
 }
 
 .emptyState p {
   margin: 0;
+  color: var(--ink);
   font-size: 16px;
   font-weight: 700;
-  color: var(--ink);
 }
 
-.emptyState span {
+.emptyState > span:last-child {
   margin-top: 6px;
-  font-size: 14px;
   color: var(--muted);
+  font-size: 14px;
 }
 
 .searchLink {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 18px;
-  padding: 10px 18px;
-  border-radius: 8px;
+  gap: 9px;
+  margin-top: 20px;
+  min-height: 44px;
+  padding: 0 22px;
+  border-radius: 9px;
   background: var(--green);
   color: #fff;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
-  transition: background 0.15s ease;
+  box-shadow: 0 2px 4px rgba(31, 49, 40, 0.12);
+  transition: background 0.15s ease, transform 0.15s ease;
 }
 
 .searchLink:hover {
   background: var(--green-dark);
+  transform: translateY(-1px);
 }
 
 .reservationList {
@@ -304,14 +425,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--line);
+  gap: 20px;
+  min-width: 0;
+  padding: 22px 28px;
+  border-top: 1px solid #edf0ed;
   transition: background 0.15s ease;
-}
-
-.reservationItem:last-child {
-  border-bottom: 0;
 }
 
 .reservationItem:hover {
@@ -321,69 +439,91 @@
 .itemLeft {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
   min-width: 0;
+  flex: 1;
 }
 
 .itemIcon {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: #edf4ef;
-  color: var(--green-dark);
-  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
 }
 
 .itemDetails {
+  flex: 1;
   min-width: 0;
 }
 
 .itemDetails h3 {
+  overflow: hidden;
   margin: 0;
-  font-size: 16px;
-  font-weight: 700;
   color: var(--ink);
+  font-size: 16px;
+  font-weight: 720;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemDetails > p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .itemMeta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  margin-top: 6px;
-  font-size: 13px;
-  color: var(--muted);
+  gap: 6px;
+  margin-top: 9px;
 }
 
-.metaItem {
+.metaPill {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  padding: 4px 11px;
+  border: 1px solid #e1e9e3;
+  border-radius: 20px;
+  background: #f5f8f5;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.metaPill svg {
+  color: #7b8e82;
+}
+
+.metaPillPrimary {
+  border-color: #b9d1c0;
+  background: var(--green-soft);
+  color: var(--green-dark);
+  font-weight: 650;
 }
 
 .itemRight {
   display: flex;
   align-items: center;
   gap: 14px;
-  flex-shrink: 0;
+  flex: none;
 }
 
 .statusBadge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 11px;
+  padding: 8px 13px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 650;
 }
 
 .statusPending {
-  background: #fff8e6;
-  color: #a05e03;
-  border: 1px solid #f9df9e;
+  background: #fff8e8;
+  color: #92540c;
+  border: 1px solid #fae2b4;
 }
 
 .statusConfirmed {
@@ -393,26 +533,30 @@
 }
 
 .statusCancelled {
-  background: #fbf2f1;
+  background: #fff0ee;
   color: var(--danger);
-  border: 1px solid #f0cfca;
+  border: 1px solid #f8d2cc;
 }
 
 .cancelButton {
-  padding: 7px 14px;
-  border: 1px solid #e2e8e4;
-  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid #edd5d1;
+  border-radius: 8px;
   background: #fff;
   color: var(--danger);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 650;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .cancelButton:hover:not(:disabled) {
-  background: #fff5f5;
-  border-color: #f0cfca;
+  background: var(--danger-soft);
+  border-color: #e5b9b1;
 }
 
 .cancelButton:disabled {
@@ -420,22 +564,97 @@
   cursor: wait;
 }
 
-.alertSuccess {
-  margin-bottom: 20px;
-  padding: 12px 16px;
-  border: 1px solid #b8dfca;
-  border-radius: 10px;
-  background: #eef8f2;
-  color: var(--green-dark);
-  font-size: 14px;
+@media (max-width: 768px) {
+  .shell {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .workspaceLabel {
+    display: none;
+  }
+
+  .nav {
+    display: flex;
+    margin-left: auto;
+  }
+
+  .navLink {
+    min-height: 40px;
+  }
+
+  .sidebarBottom {
+    margin: 0 0 0 4px;
+  }
+
+  .profileCard {
+    display: none;
+  }
+
+  .logoutLink {
+    width: auto;
+    padding: 9px 12px;
+    margin: 0;
+    font-size: 0;
+  }
+
+  .logoutLink svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .topbar {
+    position: static;
+    height: 52px;
+    padding: 0 16px;
+  }
+
+  .content {
+    padding: 24px 16px 40px;
+  }
 }
 
-.alertError {
-  margin-bottom: 20px;
-  padding: 12px 16px;
-  border: 1px solid #f0cfca;
-  border-radius: 10px;
-  background: var(--danger-soft);
-  color: var(--danger);
-  font-size: 14px;
+@media (max-width: 700px) {
+  .content {
+    padding: 28px 18px 40px;
+  }
+
+  .topbar {
+    padding: 0 18px;
+  }
+
+  .cardHeading {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .reservationItem {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+}
+
+@media (max-width: 580px) {
+  .reservationItem {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .itemRight {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
