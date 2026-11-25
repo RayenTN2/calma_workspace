@@ -3,7 +3,11 @@ import {
   BOOKING_BUFFER_MINUTES,
   PURPOSE_TO_ROOM_TYPE,
 } from "../config";
-import { validateCreateReservation } from "../validators/reservation.validator";
+import {
+  validateCreateReservation,
+  validateParticipants,
+  validateDuration,
+} from "../validators/reservation.validator";
 import {
   findRoomById,
   findConflictingReservations,

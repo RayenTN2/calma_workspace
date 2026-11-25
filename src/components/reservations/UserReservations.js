@@ -15,6 +15,7 @@ import {
   XCircle,
 } from "lucide-react";
 import LogoutButton from "@/components/auth/LogoutButton";
+import Brand from "@/components/Brand";
 import styles from "./UserReservations.module.css";
 
 const PURPOSE_LABELS = {
@@ -54,10 +55,10 @@ export default function UserReservations({ user }) {
         if (response.ok) {
           setReservations(data.reservations || []);
         } else {
-          setError(data.message || "Impossible de charger les réservations.");
+          setError(data.message === "Internal server error." ? "Une erreur est survenue lors de l’opération." : data.message || "Impossible de charger les réservations.");
         }
       } catch {
-        setError("Erreur de connexion au serveur.");
+        setError("Impossible de joindre le serveur. Vérifiez votre connexion puis réessayez.");
       } finally {
         setLoading(false);
       }
@@ -82,7 +83,7 @@ export default function UserReservations({ user }) {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.message || "Impossible d'annuler la réservation.");
+        setError(data.message === "Internal server error." ? "Une erreur est survenue lors de l’opération." : data.message || "Impossible d’annuler la réservation.");
         return;
       }
 
@@ -93,7 +94,7 @@ export default function UserReservations({ user }) {
         )
       );
     } catch {
-      setError("Erreur de communication avec le serveur.");
+      setError("Impossible de joindre le serveur. Vérifiez votre connexion puis réessayez.");
     } finally {
       setCancellingId(null);
     }
@@ -129,10 +130,7 @@ export default function UserReservations({ user }) {
   return (
     <main className={styles.shell}>
       <aside className={styles.sidebar}>
-        <Link className={styles.brand} href="/" aria-label="Calma Workspace, accueil">
-          <span className={styles.brandMark}>c</span>
-          <span>calma<span className={styles.brandLight}>workspace</span></span>
-        </Link>
+        <Brand />
         <div className={styles.workspaceLabel}>ESPACE DE GESTION</div>
         <nav className={styles.nav} aria-label="Navigation principale">
           <Link className={styles.navLink} href="/rooms">

@@ -1,11 +1,30 @@
 .shell {
+  --ink: #1f3128;
+  --ink-soft: #4a5b52;
+  --muted: #6b7a72;
+  --line: #e4e9e5;
+  --bg: #f4f7f4;
+  --surface: #fff;
+  --green: #2f6b53;
+  --green-dark: #245641;
+  --green-soft: #edf4ef;
+  --danger: #a2473e;
+  --danger-soft: #fff0ee;
+  --shadow: 0 1px 2px rgba(31, 49, 40, 0.05), 0 6px 20px rgba(31, 49, 40, 0.06);
+
   display: flex;
   min-height: 100vh;
   background: var(--bg);
   color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
 }
 
+.shell button { font: inherit; }
+
 .sidebar {
+  box-sizing: border-box;
   position: sticky;
   top: 0;
   display: flex;
@@ -166,8 +185,9 @@
 }
 
 .content {
-  padding: 32px;
-  max-width: 1000px;
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  padding: 36px clamp(20px, 4vw, 56px) 64px;
 }
 
 .pageHeading {
@@ -187,7 +207,7 @@
 
 .pageHeading h1 {
   margin: 0;
-  font-size: 32px;
+  font-size: clamp(30px, 4vw, 42px);
   font-weight: 750;
   color: #1c3327;
   letter-spacing: -1px;
@@ -438,4 +458,36 @@
   background: var(--danger-soft);
   color: var(--danger);
   font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .shell { flex-direction: column; }
+  .sidebar {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .workspaceLabel { display: none; }
+  .nav { display: flex; margin-left: auto; }
+  .navLink { padding: 8px; }
+  .sidebarBottom { margin: 0 0 0 4px; padding: 0; border: 0; }
+  .profileCard { display: none; }
+  .logoutLink { width: auto; font-size: 0; }
+  .topbar { height: 52px; padding: 0 16px; }
+  .content { padding: 24px 16px 40px; }
+}
+
+@media (max-width: 540px) {
+  .brand { font-size: 16px; }
+  .pageHeading { align-items: flex-start; }
+  .pageLead { font-size: 14px; }
+  .reservationItem { align-items: flex-start; flex-direction: column; }
+  .itemRight { width: 100%; justify-content: space-between; }
 }

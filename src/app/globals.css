@@ -25,6 +25,42 @@ body {
   margin: 0;
 }
 
+.calmaBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #1f3128;
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: -0.8px;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.calmaBrandMark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  place-items: center;
+  border-radius: 11px;
+  background: #2f6b53;
+  color: #fff;
+  font-family: Georgia, serif;
+  font-size: 25px;
+  font-weight: 750;
+  letter-spacing: 0;
+}
+
+.calmaBrandName > span { color: #6b7a72; font-weight: 400; }
+.calmaBrandCentered { justify-content: center; margin-inline: auto; }
+
+@media (max-width: 540px) {
+  .calmaBrand { gap: 8px; font-size: 18px; }
+  .calmaBrandMark { width: 36px; height: 36px; font-size: 22px; }
+}
+
 body {
   min-height: 100vh;
   background: var(--background);

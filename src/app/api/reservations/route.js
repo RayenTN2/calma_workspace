@@ -42,7 +42,7 @@ export async function POST(request) {
       },
       { status: 201 }
     );
-    } catch (error) {
+  } catch (error) {
     if (error.status) {
       const payload = { message: error.message };
       if (error.code) payload.error = error.code;
@@ -55,6 +55,7 @@ export async function POST(request) {
       { status: 500 }
     );
   }
+}
 
 export async function GET(request) {
   try {

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Armchair, CalendarDays, CheckCircle2, Clock3, DoorOpen, LogIn, Monitor, Search, Users } from "lucide-react";
 import LogoutButton from "@/components/auth/LogoutButton";
+import Brand from "@/components/Brand";
 import styles from "./AvailabilitySearch.module.css";
 import {
   BOOKING_MAX_DURATION_MINUTES,
@@ -41,7 +42,7 @@ const ERROR_MESSAGES = {
   "Invalid reservation purpose.": "L’usage sélectionné n’est pas reconnu.",
   "This room is already booked for the selected time slot.": "Cette salle est déjà réservée pour ce créneau horaire.",
   "You must log in first.": "Connectez-vous pour effectuer cette action.",
-  "Internal server error.": "Une erreur est survenue lors de l'opération.",
+  "Internal server error.": "Une erreur est survenue lors de l’opération.",
 };
 
 function getDisplayError(message) {
@@ -182,7 +183,7 @@ export default function AvailabilitySearch({ user }) {
       );
       setRooms((current) => current.filter((r) => r.id !== room.id));
     } catch {
-      setError("Impossibl de joindre le serveur pour réserver la salle.");
+      setError("Impossible de joindre le serveur pour réserver la salle.");
     } finally {
       setBookingRoomId(null);
     }
@@ -191,10 +192,7 @@ export default function AvailabilitySearch({ user }) {
   return (
     <main className={styles.shell}>
       <aside className={styles.sidebar}>
-        <Link className={styles.brand} href="/" aria-label="Calma Workspace, accueil">
-          <span className={styles.brandMark}>c</span>
-          <span>calma<span className={styles.brandLight}>workspace</span></span>
-        </Link>
+        <Brand />
         <div className={styles.workspaceLabel}>ESPACE DE GESTION</div>
         <nav className={styles.nav} aria-label="Navigation principale">
           <Link className={`${styles.navLink} ${styles.navActive}`} href="/rooms" aria-current="page">
