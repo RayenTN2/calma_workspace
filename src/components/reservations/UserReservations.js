@@ -24,6 +24,13 @@ const PURPOSE_LABELS = {
   GROUP_TRAINING: "Formation de groupe",
 };
 
+const ROOM_TYPE_LABELS = {
+  INDIVIDUAL: "Bureau individuel",
+  MEETING: "Salle de réunion",
+  TRAINING: "Salle de formation",
+  OTHER: "Autre",
+};
+
 const STATUS_CONFIG = {
   PENDING_PAYMENT: {
     label: "En attente de paiement",
@@ -165,6 +172,7 @@ export default function UserReservations({ user }) {
       <section className={styles.mainArea}>
         <header className={styles.topbar}>
           <div className={styles.breadcrumb}>Espace personnel <span>/</span> <strong>Mes réservations</strong></div>
+          <div className={styles.topbarRight}><span className={styles.onlineDot} /> Créneaux actifs</div>
         </header>
 
         <div className={styles.content}>
@@ -177,27 +185,31 @@ export default function UserReservations({ user }) {
               </p>
             </div>
             <div className={styles.headingIcon} aria-hidden="true">
-              <CalendarDays size={26} strokeWidth={1.8} />
+              <CalendarDays size={28} strokeWidth={1.8} />
             </div>
           </section>
 
           {notice && (
             <p role="status" className={styles.alertSuccess}>
-              <CheckCircle2 size={18} style={{ display: "inline", verticalAlign: "text-bottom", marginRight: 8 }} />
-              {notice}
+              <CheckCircle2 size={18} />
+              <span>{notice}</span>
             </p>
           )}
 
           {error && (
             <p role="alert" className={styles.alertError}>
-              <AlertCircle size={18} style={{ display: "inline", verticalAlign: "text-bottom", marginRight: 8 }} />
-              {error}
+              <AlertCircle size={18} />
+              <span>{error}</span>
             </p>
           )}
 
           <section className={styles.card} aria-labelledby="reservations-title">
-            <div className={styles.cardHeader}>
-              <h2 id="reservations-title">Historique & créneaux réservés</h2>
+            <div className={styles.cardHeading}>
+              <div>
+                <span className={styles.sectionEyebrow}>RÉSERVATIONS</span>
+                <h2 id="reservations-title">Vos créneaux réservés</h2>
+                <p>Retrouvez l’ensemble des salles et créneaux horaires bloqués pour vos activités.</p>
+              </div>
               <span className={styles.countBadge}>
                 {reservations.length} {reservations.length > 1 ? "réservations" : "réservation"}
               </span>
@@ -236,23 +248,21 @@ export default function UserReservations({ user }) {
                         </div>
                         <div className={styles.itemDetails}>
                           <h3>{res.room?.name || "Salle"}</h3>
+                          <p>{ROOM_TYPE_LABELS[res.room?.roomType] ?? "Salle"}</p>
                           <div className={styles.itemMeta}>
-                            <span className={styles.metaItem}>
-                              <strong>{PURPOSE_LABELS[res.purpose] || res.purpose}</strong>
+                            <span className={`${styles.metaPill} ${styles.metaPillPrimary}`}>
+                              {PURPOSE_LABELS[res.purpose] || res.purpose}
                             </span>
-                            <span>•</span>
-                            <span className={styles.metaItem}>
-                              <CalendarDays size={14} />
+                            <span className={styles.metaPill}>
+                              <CalendarDays size={13} />
                               {dateStr}
                             </span>
-                            <span>•</span>
-                            <span className={styles.metaItem}>
-                              <Clock size={14} />
+                            <span className={styles.metaPill}>
+                              <Clock size={13} />
                               {timeStr}
                             </span>
-                            <span>•</span>
-                            <span className={styles.metaItem}>
-                              <Users size={14} />
+                            <span className={styles.metaPill}>
+                              <Users size={13} />
                               {res.participants} pers.
                             </span>
                           </div>
