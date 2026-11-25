@@ -42,12 +42,11 @@ export async function POST(request) {
       },
       { status: 201 }
     );
-  } catch (error) {
+    } catch (error) {
     if (error.status) {
-      return NextResponse.json(
-        { message: error.message },
-        { status: error.status }
-      );
+      const payload = { message: error.message };
+      if (error.code) payload.error = error.code;
+      return NextResponse.json(payload, { status: error.status });
     }
 
     console.error("Create reservation error:", error);
@@ -56,7 +55,6 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
 
 export async function GET(request) {
   try {

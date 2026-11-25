@@ -44,14 +44,18 @@ export async function createReservation({ userId, payload }) {
       throw createError("This room is currently inactive.", 400);
     }
 
-    // Check capacity
-    if (participants > room.capacity) {
-      throw createError(
-        `Room capacity exceeded. Maximum capacity is ${room.capacity}.`,
-        400
-      );
+    
+    // Check capacity (S2-T12)
+    const capacityCheck = validateParticipants(participants, room.capacity);
+    if (!capacityCheck.valid) {
+      throw createError(capacityCheck.message, 400);
     }
-
+        // Check duration (S2-T13) — sécurité supplémentaire
+    const durationCheck = validateDuration(startAt, endAt);
+    if (!durationCheck.valid) {
+      throw createError(durationCheck.message, 400);
+    }
+	
     // Check purpose compatibility with room type
     const expectedRoomType = PURPOSE_TO_ROOM_TYPE[purpose];
     if (expectedRoomType && room.roomType !== expectedRoomType) {
@@ -80,11 +84,13 @@ export async function createReservation({ userId, payload }) {
       )
     );
 
-    if (isConflicting) {
-      throw createError(
-        "This room is already booked for the selected time slot.",
+     if (isConflicting) {
+      const err = createError(
+        "Ce créneau chevauche une réservation existante (temps de battement inclus).",
         409
       );
+      err.code = "CONFLICT";
+      throw err;
     }
 
     // Create reservation with PENDING_PAYMENT status
