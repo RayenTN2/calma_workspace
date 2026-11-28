@@ -2,10 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Armchair, CalendarDays, Clock3, DoorOpen, LogIn, Monitor, Search, Users } from "lucide-react";
+import { Armchair, CalendarDays, CheckCircle2, Clock3, DoorOpen, LogIn, Monitor, Search, Users } from "lucide-react";
 import LogoutButton from "@/components/auth/LogoutButton";
+import Brand from "@/components/Brand";
 import styles from "./AvailabilitySearch.module.css";
-
+import {
+  BOOKING_MAX_DURATION_MINUTES,
+  BOOKING_MIN_DURATION_MINUTES,
+} from "@/features/reservations/config";
+import {
+  validateParticipants,
+  validateDuration,
+} from "@/features/reservations/validators/reservation.validator";
 const PURPOSES = [
   { value: "", label: "Tous les usages" },
   { value: "PERSONAL_REVISION", label: "Révision personnelle" },
@@ -32,12 +40,13 @@ const ERROR_MESSAGES = {
   "End time must be after start time.": "L’heure de fin doit être postérieure à l’heure de début.",
   "Participants must be a positive whole number.": "Le nombre de participants doit être un entier supérieur à zéro.",
   "Invalid reservation purpose.": "L’usage sélectionné n’est pas reconnu.",
-  "You must log in first.": "Connectez-vous pour rechercher les disponibilités.",
-  "Internal server error.": "Une erreur est survenue lors de la recherche.",
+  "This room is already booked for the selected time slot.": "Cette salle est déjà réservée pour ce créneau horaire.",
+  "You must log in first.": "Connectez-vous pour effectuer cette action.",
+  "Internal server error.": "Une erreur est survenue lors de l’opération.",
 };
 
 function getDisplayError(message) {
-  return ERROR_MESSAGES[message] || "La recherche n’a pas pu aboutir. Réessayez dans un instant.";
+  return ERROR_MESSAGES[message] || message || "L’opération n’a pas pu aboutir. Réessayez dans un instant.";
 }
 
 export default function AvailabilitySearch({ user }) {
@@ -51,7 +60,11 @@ export default function AvailabilitySearch({ user }) {
   });
   const [rooms, setRooms] = useState(null);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [bookingRoomId, setBookingRoomId] = useState(null);
+    const [selectedRoom, setSelectedRoom] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   function update(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -69,6 +82,7 @@ export default function AvailabilitySearch({ user }) {
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
+    setSuccess("");
     setRooms(null);
     setLoading(true);
 
@@ -102,18 +116,92 @@ export default function AvailabilitySearch({ user }) {
     }
   }
 
+    async function handleBookRoom(room) {
+    setError("");
+    setSuccess("");
+    setFieldErrors({});
+
+    // Validation côté client (S2-T14)
+    const pCheck = validateParticipants(Number(form.participants), room.capacity);
+    if (!pCheck.valid) {
+      setFieldErrors({ participants: pCheck.message });
+      return;
+    }
+
+    const start = new Date(`${form.date}T${form.startTime}:00`);
+    const end = new Date(`${form.date}T${form.endTime}:00`);
+    const dCheck = validateDuration(start, end);
+    if (!dCheck.valid) {
+      setFieldErrors({ timeSlot: dCheck.message });
+      return;
+    }
+
+    setBookingRoomId(room.id);
+    setSelectedRoom(room);
+
+    const bookingPurpose =
+      form.purpose ||
+      (room.roomType === "MEETING"
+        ? "MEETING"
+        : room.roomType === "TRAINING"
+        ? "GROUP_TRAINING"
+        : "PERSONAL_REVISION");
+
+    try {
+      const response = await fetch("/api/reservations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          roomId: room.id,
+          purpose: bookingPurpose,
+          date: form.date,
+          startTime: form.startTime,
+          endTime: form.endTime,
+          participants: form.participants,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.error === "CONFLICT" || response.status === 409) {
+          setError("Ce créneau vient d’être réservé par quelqu’un d’autre. Choisissez un autre horaire.");
+        } else if (data.error === "VALIDATION" || response.status === 400) {
+          setError(getDisplayError(data.message));
+        } else {
+          setError(getDisplayError(data.message));
+        }
+        return;
+      }
+
+      const purposeLabel =
+        PURPOSES.find((p) => p.value === bookingPurpose)?.label || bookingPurpose;
+      setSuccess(
+        `Salle « ${room.name} » réservée avec succès pour le ${form.date} de ${form.startTime} à ${form.endTime} (${purposeLabel}) ! Le créneau est bloqué.`
+      );
+      setRooms((current) => current.filter((r) => r.id !== room.id));
+    } catch {
+      setError("Impossible de joindre le serveur pour réserver la salle.");
+    } finally {
+      setBookingRoomId(null);
+    }
+  }
+
   return (
     <main className={styles.shell}>
       <aside className={styles.sidebar}>
-        <Link className={styles.brand} href="/" aria-label="Calma Workspace, accueil">
-          <span className={styles.brandMark}>c</span>
-          <span>calma<span className={styles.brandLight}>workspace</span></span>
-        </Link>
+        <Brand />
         <div className={styles.workspaceLabel}>ESPACE DE GESTION</div>
         <nav className={styles.nav} aria-label="Navigation principale">
           <Link className={`${styles.navLink} ${styles.navActive}`} href="/rooms" aria-current="page">
             <DoorOpen size={18} strokeWidth={1.8} />
             <span>Rechercher une salle</span>
+          </Link>
+          <Link className={styles.navLink} href="/reservations">
+            <CalendarDays size={18} strokeWidth={1.8} />
+            <span>Mes réservations</span>
           </Link>
         </nav>
         <div className={styles.sidebarBottom}>
@@ -179,7 +267,7 @@ export default function AvailabilitySearch({ user }) {
                 />
               </label>
 
-              <label className={styles.field}>
+               <label className={styles.field}>
                 <span className={styles.fieldLabel}><Users size={16} /> Participants</span>
                 <input
                   type="number"
@@ -190,6 +278,14 @@ export default function AvailabilitySearch({ user }) {
                   onChange={(e) => update("participants", e.target.value)}
                   className={styles.control}
                 />
+                {selectedRoom && (
+                  <small className={styles.fieldHint}>
+                    Capacité max : {selectedRoom.capacity} personnes
+                  </small>
+                )}
+                {fieldErrors.participants && (
+                  <small className={styles.fieldError}>{fieldErrors.participants}</small>
+                )}
               </label>
 
               <label className={styles.field}>
@@ -203,7 +299,7 @@ export default function AvailabilitySearch({ user }) {
                 />
               </label>
 
-              <label className={styles.field}>
+                            <label className={styles.field}>
                 <span className={styles.fieldLabel}><Clock3 size={16} /> Heure de fin</span>
                 <input
                   type="time"
@@ -212,6 +308,14 @@ export default function AvailabilitySearch({ user }) {
                   onChange={(e) => update("endTime", e.target.value)}
                   className={styles.control}
                 />
+                <small className={styles.fieldHint}>
+                  Durée max : {BOOKING_MAX_DURATION_MINUTES / 60} h
+                  {" · "}
+                  Durée min : {BOOKING_MIN_DURATION_MINUTES} min
+                </small>
+                {fieldErrors.timeSlot && (
+                  <small className={styles.fieldError}>{fieldErrors.timeSlot}</small>
+                )}
               </label>
 
               <label className={`${styles.field} ${styles.fieldFull}`}>
@@ -257,6 +361,12 @@ export default function AvailabilitySearch({ user }) {
         </section>
 
         {error && <p role="alert" className={styles.errorMessage}>{error}</p>}
+        {success && (
+          <p role="status" className={styles.bookingSuccess}>
+            <CheckCircle2 size={18} style={{ display: "inline", verticalAlign: "text-bottom", marginRight: 8 }} />
+            {success}
+          </p>
+        )}
 
         {rooms && (
           <section className={styles.resultsCard} aria-live="polite" aria-labelledby="results-title">
@@ -293,6 +403,14 @@ export default function AvailabilitySearch({ user }) {
                     <span className={styles.capacityBadge}>
                       <Users size={15} /> Jusqu’à {room.capacity} places
                     </span>
+                    <button
+                      type="button"
+                      onClick={() => handleBookRoom(room)}
+                      disabled={bookingRoomId === room.id}
+                      className={styles.bookButton}
+                    >
+                      {bookingRoomId === room.id ? "Réservation…" : "Réserver"}
+                    </button>
                   </li>
                 ))}
               </ul>

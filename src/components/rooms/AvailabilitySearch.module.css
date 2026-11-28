@@ -102,7 +102,19 @@
 .profileText { display: grid; gap: 2px; flex: 1; min-width: 0; }
 .profileText strong { color: var(--ink); font-size: 14px; }
 .profileText small { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.fieldHint {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
 
+.fieldError {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: #dc2626;
+}
 .logoutLink {
   width: 100%;
   display: flex;
@@ -570,6 +582,146 @@
   font-weight: 650;
 }
 
+.bookButton {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--green);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.bookButton:hover:not(:disabled) {
+  background: var(--green-dark);
+  transform: translateY(-1px);
+}
+
+.bookButton:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.bookingSuccess {
+  margin: 18px 0 0;
+  padding: 13px 16px;
+  border: 1px solid #b8dfca;
+  border-radius: 10px;
+  background: #eef8f2;
+  color: var(--green-dark);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.modalContent {
+  width: 100%;
+  max-width: 520px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.modalClose {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.modalClose:hover {
+  background: #f1f5f2;
+  color: var(--ink);
+}
+
+.modalBody {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalDetailRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #f8faf8;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.modalDetailRow strong {
+  color: var(--ink);
+}
+
+.modalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--line);
+  background: #fbfcfb;
+}
+
+.cancelModalButton {
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink-soft);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancelModalButton:hover {
+  background: #f8faf8;
+}
+
 @media (max-width: 700px) {
   .content {
     padding: 28px 18px 40px;
@@ -684,4 +836,17 @@
   .roomCard {
     transition: none;
   }
+}
+.fieldHint {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.fieldError {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: #dc2626;
 }

@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import styles from "./RoomsDashboard.module.css";
 import LogoutButton from "@/components/auth/LogoutButton";
+import Brand from "@/components/Brand";
 
 const roomTypeLabels = {
   INDIVIDUAL: "Bureau individuel",
@@ -320,10 +321,7 @@ export default function RoomsDashboard({ user }) {
   return (
     <main className={styles.shell}>
       <aside className={styles.sidebar}>
-        <Link className={styles.brand} href="/">
-          <span className={styles.brandMark}>c</span>
-          <span>calma<span className={styles.brandLight}>workspace</span></span>
-        </Link>
+        <Brand />
         <div className={styles.workspaceLabel}>ESPACE DE GESTION</div>
         <nav className={styles.nav} aria-label="Navigation principale">
           <a className={`${styles.navLink} ${activeTab === "rooms" ? styles.navActive : ""}`} href="/gerant/salles" aria-current={activeTab === "rooms" ? "page" : undefined} onClick={(event) => { event.preventDefault(); setActiveTab("rooms"); }}>
