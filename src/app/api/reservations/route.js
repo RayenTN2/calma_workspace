@@ -44,10 +44,9 @@ export async function POST(request) {
     );
   } catch (error) {
     if (error.status) {
-      return NextResponse.json(
-        { message: error.message },
-        { status: error.status }
-      );
+      const payload = { message: error.message };
+      if (error.code) payload.error = error.code;
+      return NextResponse.json(payload, { status: error.status });
     }
 
     console.error("Create reservation error:", error);

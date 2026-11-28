@@ -1,4 +1,9 @@
-import { CENTER_UTC_OFFSET, VALID_PURPOSES } from "../config";
+import {
+  CENTER_UTC_OFFSET,
+  VALID_PURPOSES,
+  BOOKING_MAX_DURATION_MINUTES,
+  BOOKING_MIN_DURATION_MINUTES,
+} from "../config";
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -18,6 +23,53 @@ function isRealDate(date) {
 
 function toDateTime(date, time) {
   return new Date(`${date}T${time}:00${CENTER_UTC_OFFSET}`);
+}
+
+export function validateParticipants(participants, roomCapacity) {
+  if (!Number.isInteger(participants)) {
+    return { valid: false, message: "Le nombre de participants doit être un entier." };
+  }
+  if (participants <= 0) {
+    return { valid: false, message: "Le nombre de participants doit être strictement positif." };
+  }
+  if (participants > roomCapacity) {
+    return {
+      valid: false,
+      message: `Le nombre de participants (${participants}) dépasse la capacité de la salle (${roomCapacity}).`,
+    };
+  }
+  return { valid: true };
+}
+
+export function validateDuration(startAt, endAt) {
+  const start = new Date(startAt).getTime();
+  const end = new Date(endAt).getTime();
+
+  if (Number.isNaN(start) || Number.isNaN(end)) {
+    return { valid: false, message: "Dates invalides." };
+  }
+  if (end <= start) {
+    return { valid: false, message: "L'heure de fin doit être postérieure à l'heure de début." };
+  }
+
+  const durationMinutes = (end - start) / 60000;
+
+  if (durationMinutes < BOOKING_MIN_DURATION_MINUTES) {
+    return {
+      valid: false,
+      message: `La durée minimale d'une réservation est de ${BOOKING_MIN_DURATION_MINUTES} minutes.`,
+    };
+  }
+  if (durationMinutes > BOOKING_MAX_DURATION_MINUTES) {
+    const maxH = Math.floor(BOOKING_MAX_DURATION_MINUTES / 60);
+    const maxM = BOOKING_MAX_DURATION_MINUTES % 60;
+    const label = maxM ? `${maxH} h ${maxM}` : `${maxH} h`;
+    return {
+      valid: false,
+      message: `La durée maximale d'une réservation est de ${label}.`,
+    };
+  }
+  return { valid: true };
 }
 
 export function validateCreateReservation(payload) {
@@ -102,6 +154,11 @@ export function validateCreateReservation(payload) {
 
   if (end <= start) {
     return { error: "End time must be after start time.", value: null };
+  }
+    // 5. Validate duration (max/min)
+  const durationCheck = validateDuration(start, end);
+  if (!durationCheck.valid) {
+    return { error: durationCheck.message, value: null };
   }
 
   return {

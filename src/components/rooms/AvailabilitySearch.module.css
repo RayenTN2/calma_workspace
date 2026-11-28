@@ -102,7 +102,19 @@
 .profileText { display: grid; gap: 2px; flex: 1; min-width: 0; }
 .profileText strong { color: var(--ink); font-size: 14px; }
 .profileText small { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.fieldHint {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
 
+.fieldError {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: #dc2626;
+}
 .logoutLink {
   width: 100%;
   display: flex;
@@ -824,4 +836,17 @@
   .roomCard {
     transition: none;
   }
+}
+.fieldHint {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.fieldError {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: #dc2626;
 }

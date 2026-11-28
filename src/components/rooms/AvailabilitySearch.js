@@ -4,8 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import { Armchair, CalendarDays, CheckCircle2, Clock3, DoorOpen, LogIn, Monitor, Search, Users } from "lucide-react";
 import LogoutButton from "@/components/auth/LogoutButton";
+import Brand from "@/components/Brand";
 import styles from "./AvailabilitySearch.module.css";
-
+import {
+  BOOKING_MAX_DURATION_MINUTES,
+  BOOKING_MIN_DURATION_MINUTES,
+} from "@/features/reservations/config";
+import {
+  validateParticipants,
+  validateDuration,
+} from "@/features/reservations/validators/reservation.validator";
 const PURPOSES = [
   { value: "", label: "Tous les usages" },
   { value: "PERSONAL_REVISION", label: "Révision personnelle" },
@@ -34,7 +42,7 @@ const ERROR_MESSAGES = {
   "Invalid reservation purpose.": "L’usage sélectionné n’est pas reconnu.",
   "This room is already booked for the selected time slot.": "Cette salle est déjà réservée pour ce créneau horaire.",
   "You must log in first.": "Connectez-vous pour effectuer cette action.",
-  "Internal server error.": "Une erreur est survenue lors de l'opération.",
+  "Internal server error.": "Une erreur est survenue lors de l’opération.",
 };
 
 function getDisplayError(message) {
@@ -55,6 +63,8 @@ export default function AvailabilitySearch({ user }) {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [bookingRoomId, setBookingRoomId] = useState(null);
+    const [selectedRoom, setSelectedRoom] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   function update(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -106,10 +116,28 @@ export default function AvailabilitySearch({ user }) {
     }
   }
 
-  async function handleBookRoom(room) {
+    async function handleBookRoom(room) {
     setError("");
     setSuccess("");
+    setFieldErrors({});
+
+    // Validation côté client (S2-T14)
+    const pCheck = validateParticipants(Number(form.participants), room.capacity);
+    if (!pCheck.valid) {
+      setFieldErrors({ participants: pCheck.message });
+      return;
+    }
+
+    const start = new Date(`${form.date}T${form.startTime}:00`);
+    const end = new Date(`${form.date}T${form.endTime}:00`);
+    const dCheck = validateDuration(start, end);
+    if (!dCheck.valid) {
+      setFieldErrors({ timeSlot: dCheck.message });
+      return;
+    }
+
     setBookingRoomId(room.id);
+    setSelectedRoom(room);
 
     const bookingPurpose =
       form.purpose ||
@@ -138,7 +166,13 @@ export default function AvailabilitySearch({ user }) {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(getDisplayError(data.message));
+        if (data.error === "CONFLICT" || response.status === 409) {
+          setError("Ce créneau vient d’être réservé par quelqu’un d’autre. Choisissez un autre horaire.");
+        } else if (data.error === "VALIDATION" || response.status === 400) {
+          setError(getDisplayError(data.message));
+        } else {
+          setError(getDisplayError(data.message));
+        }
         return;
       }
 
@@ -158,10 +192,7 @@ export default function AvailabilitySearch({ user }) {
   return (
     <main className={styles.shell}>
       <aside className={styles.sidebar}>
-        <Link className={styles.brand} href="/" aria-label="Calma Workspace, accueil">
-          <span className={styles.brandMark}>c</span>
-          <span>calma<span className={styles.brandLight}>workspace</span></span>
-        </Link>
+        <Brand />
         <div className={styles.workspaceLabel}>ESPACE DE GESTION</div>
         <nav className={styles.nav} aria-label="Navigation principale">
           <Link className={`${styles.navLink} ${styles.navActive}`} href="/rooms" aria-current="page">
@@ -236,7 +267,7 @@ export default function AvailabilitySearch({ user }) {
                 />
               </label>
 
-              <label className={styles.field}>
+               <label className={styles.field}>
                 <span className={styles.fieldLabel}><Users size={16} /> Participants</span>
                 <input
                   type="number"
@@ -247,6 +278,14 @@ export default function AvailabilitySearch({ user }) {
                   onChange={(e) => update("participants", e.target.value)}
                   className={styles.control}
                 />
+                {selectedRoom && (
+                  <small className={styles.fieldHint}>
+                    Capacité max : {selectedRoom.capacity} personnes
+                  </small>
+                )}
+                {fieldErrors.participants && (
+                  <small className={styles.fieldError}>{fieldErrors.participants}</small>
+                )}
               </label>
 
               <label className={styles.field}>
@@ -260,7 +299,7 @@ export default function AvailabilitySearch({ user }) {
                 />
               </label>
 
-              <label className={styles.field}>
+                            <label className={styles.field}>
                 <span className={styles.fieldLabel}><Clock3 size={16} /> Heure de fin</span>
                 <input
                   type="time"
@@ -269,6 +308,14 @@ export default function AvailabilitySearch({ user }) {
                   onChange={(e) => update("endTime", e.target.value)}
                   className={styles.control}
                 />
+                <small className={styles.fieldHint}>
+                  Durée max : {BOOKING_MAX_DURATION_MINUTES / 60} h
+                  {" · "}
+                  Durée min : {BOOKING_MIN_DURATION_MINUTES} min
+                </small>
+                {fieldErrors.timeSlot && (
+                  <small className={styles.fieldError}>{fieldErrors.timeSlot}</small>
+                )}
               </label>
 
               <label className={`${styles.field} ${styles.fieldFull}`}>
