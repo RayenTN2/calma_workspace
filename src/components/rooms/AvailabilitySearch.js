@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Armchair, CalendarDays, CheckCircle2, Clock3, DoorOpen, LogIn, Monitor, Search, Users } from "lucide-react";
+import { Armchair, CalendarDays, CheckCircle2, Clock3, DoorOpen, LogIn, Monitor, Search, Users, Receipt } from "lucide-react";
 import LogoutButton from "@/components/auth/LogoutButton";
 import Brand from "@/components/Brand";
 import styles from "./AvailabilitySearch.module.css";
@@ -14,6 +14,7 @@ import {
   validateParticipants,
   validateDuration,
 } from "@/features/reservations/validators/reservation.validator";
+import { calculateReservationCost } from "@/features/reservations/services/pricing.service";
 const PURPOSES = [
   { value: "", label: "Tous les usages" },
   { value: "PERSONAL_REVISION", label: "Révision personnelle" },
@@ -178,8 +179,14 @@ export default function AvailabilitySearch({ user }) {
 
       const purposeLabel =
         PURPOSES.find((p) => p.value === bookingPurpose)?.label || bookingPurpose;
+      const totalStr =
+        data.reservation?.formattedTotalAmount ||
+        (data.reservation?.totalAmount !== undefined && data.reservation?.totalAmount !== null
+          ? `${Number(data.reservation.totalAmount).toFixed(2)} DT`
+          : "");
+      const amountMessage = totalStr ? ` Montant exact à payer : ${totalStr}.` : "";
       setSuccess(
-        `Salle « ${room.name} » réservée avec succès pour le ${form.date} de ${form.startTime} à ${form.endTime} (${purposeLabel}) ! Le créneau est bloqué.`
+        `Salle « ${room.name} » réservée avec succès pour le ${form.date} de ${form.startTime} à ${form.endTime} (${purposeLabel}) !${amountMessage} Le créneau est bloqué en attente de paiement.`
       );
       setRooms((current) => current.filter((r) => r.id !== room.id));
     } catch {
@@ -267,7 +274,7 @@ export default function AvailabilitySearch({ user }) {
                 />
               </label>
 
-               <label className={styles.field}>
+              <label className={styles.field}>
                 <span className={styles.fieldLabel}><Users size={16} /> Participants</span>
                 <input
                   type="number"
@@ -299,7 +306,7 @@ export default function AvailabilitySearch({ user }) {
                 />
               </label>
 
-                            <label className={styles.field}>
+              <label className={styles.field}>
                 <span className={styles.fieldLabel}><Clock3 size={16} /> Heure de fin</span>
                 <input
                   type="time"
@@ -388,31 +395,53 @@ export default function AvailabilitySearch({ user }) {
               </div>
             ) : (
               <ul className={styles.roomList}>
-                {rooms.map((room) => (
-                  <li key={room.id} className={styles.roomCard}>
-                    <span className={styles.roomIcon} aria-hidden="true"><Armchair size={22} /></span>
-                    <div className={styles.roomInfo}>
-                      <h3>{room.name}</h3>
-                      <p>{ROOM_TYPE_LABELS[room.roomType] ?? "Salle"}</p>
-                      {room.equipment.length > 0 && (
-                        <div className={styles.roomEquipment}>
-                          {room.equipment.map((item) => <span key={item}>{item}</span>)}
-                        </div>
+                {rooms.map((room) => {
+                  let roomCost = null;
+                  if (form.date && form.startTime && form.endTime) {
+                    try {
+                      roomCost = calculateReservationCost({
+                        room,
+                        startAt: `${form.date}T${form.startTime}:00`,
+                        endAt: `${form.date}T${form.endTime}:00`,
+                        purpose: form.purpose,
+                        participants: Number(form.participants) || 1,
+                      });
+                    } catch {
+                      roomCost = null;
+                    }
+                  }
+
+                  return (
+                    <li key={room.id} className={styles.roomCard}>
+                      <span className={styles.roomIcon} aria-hidden="true"><Armchair size={22} /></span>
+                      <div className={styles.roomInfo}>
+                        <h3>{room.name}</h3>
+                        <p>{ROOM_TYPE_LABELS[room.roomType] ?? "Salle"}</p>
+                        {room.equipment.length > 0 && (
+                          <div className={styles.roomEquipment}>
+                            {room.equipment.map((item) => <span key={item}>{item}</span>)}
+                          </div>
+                        )}
+                      </div>
+                      <span className={styles.capacityBadge}>
+                        <Users size={15} /> Jusqu’à {room.capacity} places
+                      </span>
+                      {roomCost && (
+                        <span className={styles.costBadge} title={`${roomCost.rateApplied} DT/${roomCost.unit}`}>
+                          <Receipt size={14} /> {roomCost.formattedAmount}
+                        </span>
                       )}
-                    </div>
-                    <span className={styles.capacityBadge}>
-                      <Users size={15} /> Jusqu’à {room.capacity} places
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => handleBookRoom(room)}
-                      disabled={bookingRoomId === room.id}
-                      className={styles.bookButton}
-                    >
-                      {bookingRoomId === room.id ? "Réservation…" : "Réserver"}
-                    </button>
-                  </li>
-                ))}
+                      <button
+                        type="button"
+                        onClick={() => handleBookRoom(room)}
+                        disabled={bookingRoomId === room.id}
+                        className={styles.bookButton}
+                      >
+                        {bookingRoomId === room.id ? "Réservation…" : "Réserver"}
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </section>

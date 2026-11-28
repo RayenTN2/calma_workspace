@@ -41,6 +41,7 @@ export async function createReservation(client, data) {
       startAt: data.startAt,
       endAt: data.endAt,
       participants: data.participants,
+      ...(data.totalAmount !== undefined ? { totalAmount: data.totalAmount } : {}),
     },
     include: {
       room: {
