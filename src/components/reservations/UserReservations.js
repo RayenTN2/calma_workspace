@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   AlertCircle,
   XCircle,
+  Receipt,
 } from "lucide-react";
 import LogoutButton from "@/components/auth/LogoutButton";
 import Brand from "@/components/Brand";
@@ -262,6 +263,18 @@ export default function UserReservations({ user }) {
                             <span className={styles.metaPill}>
                               <Users size={13} />
                               {res.participants} pers.
+                            </span>
+                            <span className={`${styles.metaPill} ${styles.metaPillCost}`}>
+                              <Receipt size={13} />
+                              <span>
+                                {res.status === "CONFIRMED" ? "Payé : " : "À payer : "}
+                                <strong>
+                                  {res.formattedTotalAmount ||
+                                    (res.totalAmount !== null && res.totalAmount !== undefined
+                                      ? `${Number(res.totalAmount).toFixed(2)} DT`
+                                      : "—")}
+                                </strong>
+                              </span>
                             </span>
                           </div>
                         </div>

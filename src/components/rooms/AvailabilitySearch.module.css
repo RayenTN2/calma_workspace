@@ -312,6 +312,7 @@
   display: grid;
   min-width: 0;
   gap: 8px;
+  align-content: start;
 }
 
 .fieldFull {
@@ -580,6 +581,24 @@
   color: var(--green-dark);
   font-size: 12px;
   font-weight: 650;
+}
+
+.costBadge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 20px;
+  border: 1px solid #e5cf94;
+  background: #fdfaf0;
+  color: #7a4f00;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.costBadge svg {
+  color: #b27a00;
 }
 
 .bookButton {

@@ -18,6 +18,10 @@ import {
   updateReservationStatus,
 } from "../repositories/reservation.repository";
 import { hasOverlap } from "@/features/availability/utils/overlap";
+import {
+  calculateReservationCost,
+  enrichReservationWithCost,
+} from "./pricing.service";
 
 function createError(message, status) {
   const error = new Error(message);
@@ -97,8 +101,18 @@ export async function createReservation({ userId, payload }) {
       throw err;
     }
 
-    // Create reservation with PENDING_PAYMENT status
-    return createReservationRecord(tx, {
+    // Calculate reservation cost automatically (US-08)
+    const cost = calculateReservationCost({
+      room,
+      startAt,
+      endAt,
+      purpose,
+      participants,
+      pricingMode: payload.pricingMode,
+    });
+
+    // Create reservation with PENDING_PAYMENT status and computed total amount
+    const created = await createReservationRecord(tx, {
       userId,
       roomId,
       purpose,
@@ -106,16 +120,27 @@ export async function createReservation({ userId, payload }) {
       startAt,
       endAt,
       status: "PENDING_PAYMENT",
+      totalAmount: cost.amount,
+    });
+
+    return enrichReservationWithCost({
+      ...created,
+      room: created.room || room,
+      startAt: created.startAt || startAt,
+      endAt: created.endAt || endAt,
+      totalAmount: created.totalAmount ?? cost.amount,
+      cost,
     });
   });
 }
 
 export async function getReservationsForUser(userId, role) {
-  if (role === "GERANT") {
-    return findAllReservations();
-  }
+  const reservations =
+    role === "GERANT"
+      ? await findAllReservations()
+      : await findReservationsByUserId(userId);
 
-  return findReservationsByUserId(userId);
+  return reservations.map(enrichReservationWithCost);
 }
 
 export async function getReservation(id, { userId, role }) {
@@ -132,7 +157,7 @@ export async function getReservation(id, { userId, role }) {
     );
   }
 
-  return reservation;
+  return enrichReservationWithCost(reservation);
 }
 
 export async function cancelReservation(id, { userId, role }) {
@@ -153,5 +178,6 @@ export async function cancelReservation(id, { userId, role }) {
     throw createError("This reservation is already cancelled.", 400);
   }
 
-  return updateReservationStatus(id, "CANCELLED");
+  const updated = await updateReservationStatus(id, "CANCELLED");
+  return enrichReservationWithCost(updated);
 }

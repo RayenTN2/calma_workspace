@@ -82,6 +82,11 @@ describe("Reservation Service", () => {
 
       expect(result.id).toBe("res-1");
       expect(result.status).toBe("PENDING_PAYMENT");
+      expect(result.totalAmount).toBe(50.0); // 2 hours in MEETING (GROUP) @ 25 DT/h
+      expect(result.formattedTotalAmount).toBe("50.00 DT");
+      expect(result.cost).toBeDefined();
+      expect(result.cost.amount).toBe(50.0);
+      expect(result.cost.typology).toBe("GROUP");
       expect(findRoomById).toHaveBeenCalledWith(roomId, prisma);
       expect(findConflictingReservations).toHaveBeenCalled();
       expect(createReservationRecord).toHaveBeenCalledWith(
@@ -92,6 +97,7 @@ describe("Reservation Service", () => {
           purpose: "MEETING",
           participants: 6,
           status: "PENDING_PAYMENT",
+          totalAmount: 50.0,
         })
       );
     });
@@ -131,7 +137,7 @@ describe("Reservation Service", () => {
           payload: { ...validPayload, participants: 8 },
         })
       ).rejects.toMatchObject({
-        message: expect.stringContaining("Room capacity exceeded"),
+        message: expect.stringContaining("dépasse la capacité"),
         status: 400,
       });
     });
@@ -166,7 +172,7 @@ describe("Reservation Service", () => {
       await expect(
         createReservation({ userId, payload: validPayload })
       ).rejects.toMatchObject({
-        message: "This room is already booked for the selected time slot.",
+        message: "Ce créneau chevauche une réservation existante (temps de battement inclus).",
         status: 409,
       });
 
@@ -189,7 +195,7 @@ describe("Reservation Service", () => {
       await expect(
         createReservation({ userId, payload: validPayload })
       ).rejects.toMatchObject({
-        message: "This room is already booked for the selected time slot.",
+        message: "Ce créneau chevauche une réservation existante (temps de battement inclus).",
         status: 409,
       });
 
@@ -239,7 +245,7 @@ describe("Reservation Service", () => {
       findReservationsByUserId.mockResolvedValue(mockList);
 
       const result = await getReservationsForUser(userId, "USER");
-      expect(result).toBe(mockList);
+      expect(result).toEqual(mockList);
       expect(findReservationsByUserId).toHaveBeenCalledWith(userId);
       expect(findAllReservations).not.toHaveBeenCalled();
     });
@@ -249,7 +255,7 @@ describe("Reservation Service", () => {
       findAllReservations.mockResolvedValue(mockList);
 
       const result = await getReservationsForUser(userId, "GERANT");
-      expect(result).toBe(mockList);
+      expect(result).toEqual(mockList);
       expect(findAllReservations).toHaveBeenCalled();
     });
   });
@@ -260,7 +266,7 @@ describe("Reservation Service", () => {
       findReservationById.mockResolvedValue(mock);
 
       const result = await getReservation("r1", { userId, role: "USER" });
-      expect(result).toBe(mock);
+      expect(result).toEqual(mock);
     });
 
     test("throws 403 when user is not owner and not GERANT", async () => {
@@ -278,7 +284,7 @@ describe("Reservation Service", () => {
       findReservationById.mockResolvedValue(mock);
 
       const result = await getReservation("r1", { userId, role: "GERANT" });
-      expect(result).toBe(mock);
+      expect(result).toEqual(mock);
     });
 
     test("throws 404 when reservation not found", async () => {
