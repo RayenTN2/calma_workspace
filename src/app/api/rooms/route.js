@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { authorizeRoles } from "@/features/auth/utils/authorization";
 import { createRoom } from "@/features/rooms/services/room.service";
+import { prisma } from "@/infrastructure/database/prisma";
 
 function authorizationResponse(result) {
   if (result.authorized) return null;
@@ -47,5 +48,35 @@ export async function POST(request) {
     return NextResponse.json({ room }, { status: 201 });
   } catch (error) {
     return errorResponse(error);
+  }
+}
+
+export async function GET(request) {
+  const authorization = await authorizeRoles(request, [
+    "USER",
+    "GERANT",
+    "AGENT_SUIVI",
+    "AGENT_PAIEMENT",
+  ]);
+  const denied = authorizationResponse(authorization);
+  if (denied) return denied;
+
+  try {
+    const rooms = await prisma.room.findMany({
+      where: { isActive: true },
+      include: {
+        equipment: {
+          include: { equipment: true },
+        },
+      },
+      orderBy: { name: "asc" },
+    });
+    return NextResponse.json({ rooms }, { status: 200 });
+  } catch (error) {
+    console.error("List rooms error:", error);
+    return NextResponse.json(
+      { message: "Unable to load rooms." },
+      { status: 500 }
+    );
   }
 }

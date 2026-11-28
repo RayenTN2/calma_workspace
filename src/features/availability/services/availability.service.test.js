@@ -62,24 +62,44 @@ describe("searchAvailableRooms", () => {
     expect(result.map((r) => r.id)).toEqual(["free"]);
   });
 
-  test("garde une salle dont la réservation se termine exactement au début du créneau", async () => {
+  test("garde une salle dont la réservation se termine en respectant le temps de battement", async () => {
     findCandidateRooms.mockResolvedValue([
       room({
-        reservations: [{ startAt: utc("07:00"), endAt: utc("09:00") }],
+        reservations: [{ startAt: utc("07:00"), endAt: utc("08:45") }],
       }),
     ]);
 
     expect(await searchAvailableRooms(query)).toHaveLength(1);
   });
 
-  test("garde une salle dont la réservation commence exactement à la fin du créneau", async () => {
+  test("exclut une salle dont la réservation se termine pendant le temps de battement avant le créneau", async () => {
     findCandidateRooms.mockResolvedValue([
       room({
-        reservations: [{ startAt: utc("11:00"), endAt: utc("13:00") }],
+        reservations: [{ startAt: utc("07:00"), endAt: utc("08:50") }],
+      }),
+    ]);
+
+    expect(await searchAvailableRooms(query)).toHaveLength(0);
+  });
+
+  test("garde une salle dont la réservation commence en respectant le temps de battement", async () => {
+    findCandidateRooms.mockResolvedValue([
+      room({
+        reservations: [{ startAt: utc("11:15"), endAt: utc("13:00") }],
       }),
     ]);
 
     expect(await searchAvailableRooms(query)).toHaveLength(1);
+  });
+
+  test("exclut une salle dont la réservation commence pendant le temps de battement après le créneau", async () => {
+    findCandidateRooms.mockResolvedValue([
+      room({
+        reservations: [{ startAt: utc("11:10"), endAt: utc("13:00") }],
+      }),
+    ]);
+
+    expect(await searchAvailableRooms(query)).toHaveLength(0);
   });
 
   test("transmet la capacité demandée au dépôt (filtre de capacité)", async () => {

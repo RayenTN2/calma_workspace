@@ -173,22 +173,63 @@ describe("Reservation Service", () => {
       expect(createReservationRecord).not.toHaveBeenCalled();
     });
 
-    test("allows reservation that ends exactly when existing starts", async () => {
+    test("throws 409 conflict when room has an existing reservation within buffer time", async () => {
       prisma.$transaction.mockImplementation((callback) => callback(prisma));
       findRoomById.mockResolvedValue(mockRoom);
-      // Existing reservation from 12:00 to 14:00; requested is 10:00 to 12:00
+      // Existing reservation from 12:10 to 14:00; requested is 10:00 to 12:00 (only 10 min gap < 15 min buffer)
       findConflictingReservations.mockResolvedValue([
         {
           id: "existing-res",
-          startAt: new Date("2026-11-25T12:00:00+01:00"),
+          startAt: new Date("2026-11-25T12:10:00+01:00"),
           endAt: new Date("2026-11-25T14:00:00+01:00"),
           status: "CONFIRMED",
         },
       ]);
-      createReservationRecord.mockResolvedValue({ id: "res-adjacent" });
+
+      await expect(
+        createReservation({ userId, payload: validPayload })
+      ).rejects.toMatchObject({
+        message: "This room is already booked for the selected time slot.",
+        status: 409,
+      });
+
+      expect(createReservationRecord).not.toHaveBeenCalled();
+    });
+
+    test("allows reservation when buffer time is respected after requested slot", async () => {
+      prisma.$transaction.mockImplementation((callback) => callback(prisma));
+      findRoomById.mockResolvedValue(mockRoom);
+      // Existing reservation starts at 12:15; requested ends at 12:00 (15 min buffer respected)
+      findConflictingReservations.mockResolvedValue([
+        {
+          id: "existing-res",
+          startAt: new Date("2026-11-25T12:15:00+01:00"),
+          endAt: new Date("2026-11-25T14:00:00+01:00"),
+          status: "CONFIRMED",
+        },
+      ]);
+      createReservationRecord.mockResolvedValue({ id: "res-after-buffer" });
 
       const res = await createReservation({ userId, payload: validPayload });
-      expect(res.id).toBe("res-adjacent");
+      expect(res.id).toBe("res-after-buffer");
+    });
+
+    test("allows reservation when buffer time is respected before requested slot", async () => {
+      prisma.$transaction.mockImplementation((callback) => callback(prisma));
+      findRoomById.mockResolvedValue(mockRoom);
+      // Existing reservation ends at 09:45; requested starts at 10:00 (15 min buffer respected)
+      findConflictingReservations.mockResolvedValue([
+        {
+          id: "existing-res",
+          startAt: new Date("2026-11-25T08:00:00+01:00"),
+          endAt: new Date("2026-11-25T09:45:00+01:00"),
+          status: "CONFIRMED",
+        },
+      ]);
+      createReservationRecord.mockResolvedValue({ id: "res-before-buffer" });
+
+      const res = await createReservation({ userId, payload: validPayload });
+      expect(res.id).toBe("res-before-buffer");
     });
   });
 

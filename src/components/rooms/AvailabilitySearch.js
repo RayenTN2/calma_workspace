@@ -304,7 +304,7 @@ export default function AvailabilitySearch({ user }) {
             </div>
 
             <div className={styles.formActions}>
-              <p>Les résultats tiennent compte de la capacité et des réservations.</p>
+              <p>Les résultats tiennent compte de la capacité, des réservations et du temps de préparation entre deux créneaux.</p>
               <button type="submit" disabled={loading} className={styles.submitButton}>
                 <Search size={17} />
                 {loading ? "Recherche en cours…" : "Rechercher les salles"}
